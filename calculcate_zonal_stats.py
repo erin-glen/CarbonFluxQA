@@ -32,7 +32,6 @@ zonal_stats_annualized(annual_input_folder)
 print("Step 3: Cleaning Zonal Stats... \n")
 input_folders = [
     os.path.join(arcpy.env.workspace, "Outputs", "00N_110E"),
-    os.path.join(arcpy.env.workspace, "Outputs", "20N_20W"),
-    os.path.join(arcpy.env.workspace, "Outputs", "Annual")
+    os.path.join(arcpy.env.workspace, "Outputs", "20N_20W")
 ]
 zonal_stats_clean(input_folders)
