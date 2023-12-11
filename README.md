@@ -69,39 +69,10 @@
 #### funcs
     This file stores all of the functions used in the tool. Any edits to functions would be made in this file.
 
-#### components
-
-    This folder houses individual scripts for running separate functions. The only input necessary in these scripts
-    is the workspace environemnt path. These can be useful for running particular functions separately and testing edits 
-    / troubleshootins. Each function is described below. 
-
-##### 01 Create Masks
-    This script uses data on tree cover density, tree cover gain, mangrove extent, WHRC biomass, and pre-2000 plantations
-    to replicate the masks that are used in GFW data processing. This facilitates direct comparison with results from the GFW 
-    dashboard, geotrellis client, and GFW API. The script creates masks based on criteria for each input dataset and saves these
-    masks in a sub directory. These masks are used later as extent inputs in the Zonal Statistics Masked script.
-
-##### 02 Zonal Stats
-    This script calulates zonal statistics for each area of interest and carbon dataset combination without applying any 
-    additional masking.
-
-##### 03 Zonal Stats Masked
-    This script calculates zonal statistics for each area of interest and carbon dataset combination and applies each of 
-    two masks:
-    
-    _tcd: considers tree cover density > 30 
-    _tcd_gain: considers tree cover density > 30 or gain = 1
-
-##### 04 Zonal Stats Annualized
-    This script calculates annual emissions in each area of interest 
-
-##### 05 Zonal Stats Cleaned
-    This script utilizes pandas to compile the results of all analyses and export them into a user-friendly csv file
 
 ### Running the Code
     To run the code, you will need to set up a workspace with inputs organized into the correct directories. A future update 
-    will include a script which automatically downloads these datasets and creates the correct directories. Until this is available, 
-    please reach out to erin.glen@wri.org for more information. 
+    will include a script which automatically downloads these datasets and creates the correct directories. Until this is        available, please reach out to erin.glen@wri.org for more information. 
 
     This code is built on arcpy, which will require a valid ArcGIS license to run. 
 
@@ -112,8 +83,6 @@
     
     A data download / prep script that will automatically download new data inputs from 
     s3 and build out the correct folder structure within a given workspace. 
-
-    Additional functions to clean and export annualized results
 
 #### Contact Info
     Erin Glen - erin.glen@wri.org
