@@ -23,7 +23,7 @@ def process_raster(raster, gain_tiles, mangrove_tiles, whrc_tiles, mask_tiles):
     gain_raster_path = os.path.join(gain_tiles, f'{tile_id}_gain.tif')
     mangrove_raster_path = os.path.join(mangrove_tiles, f'{tile_id}_mangrove_agb_t_ha_2000_rewindow.tif')
     whrc_raster_path = os.path.join(whrc_tiles, f'{tile_id}_t_aboveground_biomass_ha_2000.tif')
-    pre_2000_raster_path = os.path.join(whrc_tiles, f'{tile_id}_plantation_2000_reclass.tif')
+    pre_2000_raster_path = os.path.join(whrc_tiles, f'{tile_id}_plantation_2000_or_earlier_processed.tif')
 
     mask_path_tcd_gain = os.path.join(mask_tiles, f'{tile_id}_tcd_gain.tif')
     print(f'Creating masks for {tile_id}: \n')
@@ -33,19 +33,24 @@ def process_raster(raster, gain_tiles, mangrove_tiles, whrc_tiles, mask_tiles):
     tcd_raster = arcpy.sa.Con(arcpy.Raster(raster) > TCD_THRESHOLD, 1, 0)
     gain_raster = arcpy.sa.Con(arcpy.Raster(gain_raster_path) > 0, 1, 0)
     whrc_raster = arcpy.sa.Con(arcpy.Raster(whrc_raster_path) > 0, 1, 0)
-    mangrove_raster = arcpy.sa.Con(arcpy.Raster(mangrove_raster_path) > 0, 1, 0)
-    #check if pre_2000 raster exists and reclass
-    #pre_2000_raster = arcpy.sa.Con(arcpy.Raster(pre_2000_raster_path) > 0, 1, 0)
+    #mangrove_raster = arcpy.sa.Con(arcpy.Raster(mangrove_raster_path) > 0, 1, 0)
 
     # step 1 multiply tcd and whrc raster (intersection of both rasters)
     output_raster = arcpy.sa.Times(tcd_raster, whrc_raster)
+
     # step 2 add the output to gain raster (union of outputs)
     output_raster = arcpy.sa.Plus(output_raster, gain_raster)
+
     # step 3 add the output to mangrove raster (union of outputs)
     #output_raster = arcpy.sa.Plus(output_raster, mangrove_raster)
 
+    # Check if Pre-2000 raster exists and Multiply
+    if os.path.exists(pre_2000_raster_path):
+        pre_2000_raster = arcpy.sa.Con(arcpy.Raster(pre_2000_raster_path) > 0, 0, 1)
+        output_raster = arcpy.sa.Times(output_raster, pre_2000_raster)
+    else:
     # step 4 (reclassify final mask raster to binary)
-    output_raster = arcpy.sa.Con(output_raster > 0, 1, 0)
+        output_raster = arcpy.sa.Con(output_raster > 0, 1, 0)
 
     output_raster.save(mask_path_tcd_gain)
 
@@ -233,7 +238,7 @@ def load_and_process_csv(file_path, file_name):
     csv_df["Name"] = file_name
     csv_df[
         "Type"] = "gross emissions" if "emis" in file_name else "gross removals" if "removals" in file_name else "net flux"
-    csv_df["Extent"] = "forest extent" if "forest" in file_name else "full extent"
+    csv_df["Extent"] = "forest extent" if "forest_extent" in file_name else "full extent"
     csv_df["Mask"] = "tcd and gain" if "tcd_gain" in file_name else "tcd" if "_tcd." in file_name else "no mask"
 
     # Dropping unnecessary columns
@@ -257,4 +262,3 @@ def zonal_stats_clean(input_folders):
     output_path = os.path.join(arcpy.env.workspace, "Outputs", "CSV", "output.csv")
     df.to_csv(output_path, index=False)
 
-# todo check why we only have forest extent outputs for removals
